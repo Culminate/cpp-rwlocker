@@ -12,6 +12,8 @@ DOCTEST_MAKE_STD_HEADERS_CLEAN_FROM_WARNINGS_ON_WALL_END
 
 using std::chrono_literals::operator""ms;
 
+const std::size_t PASS = 10000;
+
 struct pass_data {
     rwl::rwlocker<> lock;
     std::atomic_int readcount = 0;
@@ -40,17 +42,65 @@ void writefunc(pass_data& data, std::chrono::milliseconds timeout) {
 }
 
 std::chrono::milliseconds mrand() {
-    auto timerand = std::bind(std::uniform_int_distribution<>(10,100),std::default_random_engine());
+    auto timerand = std::bind(std::uniform_int_distribution<>(1,10),std::default_random_engine());
     return std::chrono::milliseconds(timerand());
 }
 
 auto boolrand = std::bind(std::uniform_int_distribution<>(0,1),std::default_random_engine());
 
-TEST_CASE("testing write/read collisions") {
+TEST_CASE("only read") {
+    pass_data test_data;
+    std::list<std::thread> run;
+    while (run.size() <= PASS) {
+        run.push_back(std::thread(readfunc, std::ref(test_data), 0ms));
+    }
+    
+    for (auto & th : run) {
+        th.join();
+    }
+}
+
+TEST_CASE("only read with timeout") {
+    pass_data test_data;
+    std::list<std::thread> run;
+    while (run.size() <= PASS) {
+        run.push_back(std::thread(readfunc, std::ref(test_data), mrand()));
+    }
+    
+    for (auto & th : run) {
+        th.join();
+    }
+}
+
+TEST_CASE("only write") {
+    pass_data test_data;
+    std::list<std::thread> run;
+    while (run.size() <= PASS) {
+        run.push_back(std::thread(writefunc, std::ref(test_data), 0ms));
+    }
+    
+    for (auto & th : run) {
+        th.join();
+    }
+}
+
+TEST_CASE("only write with timeout") {
+    pass_data test_data;
+    std::list<std::thread> run;
+    while (run.size() <= PASS) {
+        run.push_back(std::thread(writefunc, std::ref(test_data), mrand()));
+    }
+    
+    for (auto & th : run) {
+        th.join();
+    }
+}
+
+TEST_CASE("write/read collisions") {
     pass_data test_data;
 
     std::list<std::thread> run;
-    while (run.size() <= 10000) {
+    while (run.size() <= PASS) {
         if (boolrand()) {
             run.push_back(std::thread(readfunc, std::ref(test_data), 0ms));
         } else {
@@ -63,11 +113,11 @@ TEST_CASE("testing write/read collisions") {
     }
 }
 
-TEST_CASE("testing write/read collisions with timeout") {
+TEST_CASE("write/read collisions with timeout") {
     pass_data test_data;
 
     std::list<std::thread> run;
-    while (run.size() <= 10000) {
+    while (run.size() <= PASS) {
         if (boolrand()) {
             run.push_back(std::thread(readfunc, std::ref(test_data), mrand()));
         } else {
@@ -78,4 +128,34 @@ TEST_CASE("testing write/read collisions with timeout") {
     for (auto & th : run) {
         th.join();
     }
+}
+
+enum class t {
+    R,
+    W
+};
+
+TEST_CASE("read/write order") {
+    std::list<t> order;
+    std::list<std::thread> run;
+    std::mutex readlock;
+
+
+    auto read = [&]() {
+        rwl::unique_read_lock ulock(data.lock);
+        std::unique_lock ulock(readlock);
+        order.push_back(t::R);
+    }
+
+    auto write = [&]() {
+        rwl::unique_write_lock ulock(data.lock);
+        order.push_back(t::W);
+    }
+
+    for (size_t i = 0; i < 4; i++) {
+        run.push_back(s)
+    }
+
+    for (auto& )
+    
 }

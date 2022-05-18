@@ -22,7 +22,7 @@ namespace rwl {
         void read_lock() {
             std::unique_lock ulock(locker);
 
-            if (wait_writers || active_writers) {
+            while (wait_writers || active_writers) {
                 read_queue.wait(ulock);
             }
 
@@ -40,11 +40,11 @@ namespace rwl {
         void write_lock() {
             std::unique_lock ulock(locker);
 
-            if (active_writers || active_readers) {
-                wait_writers++;
+            wait_writers++;
+            while (active_writers || active_readers) {
                 write_queue.wait(ulock);
-                wait_writers--;
             }
+            wait_writers--;
 
             active_writers++;
         }
