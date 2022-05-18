@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <mutex>
 #include <condition_variable>
 
@@ -84,11 +86,11 @@ namespace rwl {
     public:
         unique_write_lock(const unique_write_lock&) = delete;
         unique_write_lock(WRITELOCK &initrlock) : rlock(initrlock) {
-            rlock.read_lock();
+            rlock.write_lock();
         }
 
         ~unique_write_lock() {
-            rlock.read_unlock();
+            rlock.write_unlock();
         }
     }; 
 }
