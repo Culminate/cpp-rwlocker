@@ -139,23 +139,42 @@ TEST_CASE("read/write order") {
     std::list<t> order;
     std::list<std::thread> run;
     std::mutex readlock;
+    rwl::rwlocker lock;
 
 
     auto read = [&]() {
-        rwl::unique_read_lock ulock(data.lock);
-        std::unique_lock ulock(readlock);
+        rwl::unique_read_lock ulock(lock);
+        std::unique_lock ureadlock(readlock);
         order.push_back(t::R);
-    }
+        std::this_thread::sleep_for(10ms);
+    };
 
     auto write = [&]() {
-        rwl::unique_write_lock ulock(data.lock);
+        rwl::unique_write_lock ulock(lock);
         order.push_back(t::W);
-    }
+        std::this_thread::sleep_for(10ms);
+    };
 
-    for (size_t i = 0; i < 4; i++) {
-        run.push_back(s)
-    }
+    for (size_t i = 0; i < 100; i++) {
+        run.push_back(std::thread(write));
+        std::this_thread::sleep_for(1ms);
 
-    for (auto& )
-    
+        for (size_t i = 0; i < 3; i++) {
+            run.push_back(std::thread(read));
+        }
+
+        run.push_back(std::thread(write));
+
+        for (auto& th : run) {
+            th.join();
+        }
+        
+        std::list<t> trueorder{ t::W, t::W, t::R, t::R, t::R };
+
+        std::string msg;
+
+        CHECK(order == trueorder);
+        order.clear();
+        run.clear();
+    }
 }
