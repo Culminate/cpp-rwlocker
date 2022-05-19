@@ -7,7 +7,7 @@ set(CONAN_INSTALL_ARGS "" CACHE STRING "флаги для команды conan i
 
 option(EXAMPLE "build example" OFF)
 option(EXAMPLE_RWLOCKER_DISABLE "disable rwlocker for example" OFF)
-set(EXAMPLE_SEED 289352958 CACHE STRING "Число с которого начинается генерация чисел")
+set(EXAMPLE_SEED 289352958 CACHE STRING "Число, с которого начинается генерация чисел")
 set(EXAMPLE_THREAD_COUNT 100 CACHE STRING "Количество потоков для запуска")
 set(EXAMPLE_LIST_SIZE 1000 CACHE STRING "Размер списка для заполнения")
 set(EXAMPLE_STRING_MULT 100 CACHE STRING "Множитель для строки. Количество конкатенаций в одну строку")

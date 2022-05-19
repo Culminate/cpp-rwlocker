@@ -1,6 +1,6 @@
 # cpp-rwlocker
 
-Only-header библиотека реализующая примитив синхронизации один писатель, много читателей.
+Only-header библиотека реализующая примитив синхронизации "один писатель, много читателей".
 Документация к классу описана в `rwlocker.hpp`
 
 Зависимости:
@@ -47,6 +47,6 @@ docker run -it --rm -v $PWD:/build rwlocker
 
 ## Unit-tests
 
-Тесты сделаны с применением фреймворка [doctest](https://github.com/doctest/doctest).
-Чтобы включить тесты в сборку нужно в cmake включить опцию `CMAKE_TESTING_ENABLED`.
+Тесты выполнены с применением фреймворка [doctest](https://github.com/doctest/doctest).
+Для включения тестов в сборку необходимо включить в cmake опцию `CMAKE_TESTING_ENABLED`.
 Будет собран исполняемый файл `test_rwlocker.cpp`.
