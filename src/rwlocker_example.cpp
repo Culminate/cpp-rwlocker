@@ -1,3 +1,11 @@
+/**
+ * \file rwlocker_example.cpp
+ * \brief Пример применения rwlocker
+ * Создан длинный список из строк. Во множетсве потоков заполняются и сверяются строки в списке.
+ * Без использования класса rwlocker данные перемешиваются и валидацию не проходят.
+ * В этом можно убедиться если включить define EXAMPLE_RWLOCKER_DISABLE.
+ */
+
 #include <iostream>
 #include <thread>
 #include <atomic>
@@ -7,8 +15,14 @@
 #include <algorithm>
 #include "rwlocker.hpp"
 
+const long long int seed  = EXAMPLE_SEED;
+const size_t thread_count = EXAMPLE_THREAD_COUNT;
+const size_t list_size    = EXAMPLE_LIST_SIZE;
+const size_t string_mult  = EXAMPLE_STRING_MULT;
+
 using std::chrono_literals::operator""ms;
 
+/** Шифтер для генерации числа */
 static inline uint64_t xorshift64(uint64_t val)
 {
 	val ^= val << 13;
@@ -17,14 +31,11 @@ static inline uint64_t xorshift64(uint64_t val)
 	return val;
 }
 
-const long long int seed = 289352958;
-const size_t thread_count = 100;
-const size_t list_size = 1000;
-const size_t string_mult = 100;
-
-
+/** Функция чтения */
 void readsome(std::list<std::string> &data, rwl::rwlocker<> &lock) {
+#ifndef EXAMPLE_RWLOCKER_DISABLE
     rwl::unique_read_lock ulock(lock);
+#endif
     int val = seed;
     for (auto& el : data) {
         std::string cmp;
@@ -32,13 +43,16 @@ void readsome(std::list<std::string> &data, rwl::rwlocker<> &lock) {
             cmp += std::to_string(val = xorshift64(val));
         }
         if (el != cmp) {
-            std::cout << "данные не сходятся" << std::endl;
+            std::cerr << "данные не сходятся" << std::endl;
         }
     }
 }
 
+/** Функция записи */
 void writesome(std::list<std::string> &data, rwl::rwlocker<> &lock) {
+#ifndef EXAMPLE_RWLOCKER_DISABLE
     rwl::unique_write_lock ulock(lock);
+#endif
     int val = seed;
     for (auto& el : data) {
         el.clear();
