@@ -5,7 +5,28 @@
 #include <condition_variable>
 
 namespace rwl {
-    template<typename Mutex = std::mutex, typename CV = std::condition_variable>
+    /**
+     * Класс реализующий примитив синхронизации один писатель, много читателей.
+     * 
+     * Использование:
+     * Если у нас есть ресурс в многопоточной среде который нужно защитить от одновременной записи,
+     * но при этом от чтения защищать не требуется.
+     * Метод read_lock позовляет открыть критическую секцию для чтения.
+     * Метод read_unlock позволяет закрыть критическую секцию для чтения.
+     * 
+     * Метод write_lock позовляет открыть критическую секцию для записи.
+     * Метод write_unlock позволяет закрыть критическую секцию для записи.
+     * 
+     * 
+     * Ограничения на использование исходят из типов, которые переданы как шаблонные параметры.
+       Не должно быть одновременно вызвано блокировок больше чем std::numeric_limits<Count>::max
+     * Вложенное открытие критической секции приводит к UB. Независимо от типа критической секции(read/write).
+     * 
+     * \tparam Mutex Класс соответвующий ограничениям Lockable, по умолчанию std::mutex.
+     * \tparam CV Класс соответвующий интерфейсу std::condition_variable.
+     * \tparam Count Интегральный тип для подсчёта активных и ждущих потоков.
+     *  
+     */
     template<typename Mutex = std::mutex, typename CV = std::condition_variable, typename Count = int>
     class rwlocker
     {
@@ -20,6 +41,7 @@ namespace rwl {
         rwlocker() = default ;
         rwlocker (const rwlocker&) = delete;
 
+        /** Блокировка секции на чтение */
         void read_lock() {
             std::unique_lock ulock(locker);
 
@@ -30,6 +52,7 @@ namespace rwl {
             active_readers++;
         }
         
+        /** Разблокировка секции на чтение */
         void read_unlock() {
             std::unique_lock ulock(locker);
 
@@ -38,6 +61,7 @@ namespace rwl {
             active_readers--;
         }
 
+        /** Блокирока секции на запись */
         void write_lock() {
             std::unique_lock ulock(locker);
 
@@ -50,6 +74,7 @@ namespace rwl {
             active_writers++;
         }
 
+        /* Разблокировка секции на запись */
         void write_unlock() {
             std::unique_lock ulock(locker);
 
@@ -63,6 +88,7 @@ namespace rwl {
         }
     };
 
+    /** RAII для класса rwlocker. Вызывает блокироку на чтение */
     template<typename READLOCK>
     class unique_read_lock
     {
@@ -79,6 +105,7 @@ namespace rwl {
         }
     };
 
+    /** RAII для класса rwlocker. Вызывает блокировку на запись */
     template<typename WRITELOCK>
     class unique_write_lock
     {
