@@ -6,15 +6,16 @@
 
 namespace rwl {
     template<typename Mutex = std::mutex, typename CV = std::condition_variable>
+    template<typename Mutex = std::mutex, typename CV = std::condition_variable, typename Count = int>
     class rwlocker
     {
     private:
         Mutex locker;
         CV read_queue;
         CV write_queue;
-        int wait_writers   = 0;
-        int active_readers = 0;
-        int active_writers = 0;
+        Count wait_writers   = 0;
+        Count active_readers = 0;
+        Count active_writers = 0;
     public:
         rwlocker() = default ;
         rwlocker (const rwlocker&) = delete;
