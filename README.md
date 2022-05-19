@@ -26,7 +26,10 @@ ctest --verbose
 ## Cборка и запуск в docker:
 
 ```
+cd <папка с проектом>
+# сборка образа
 docker build -t rwlocker .
+# запуск сборки, исполнения тестов и примера
 docker run -it --rm -v $PWD:/build rwlocker
 ```
 
@@ -50,3 +53,5 @@ docker run -it --rm -v $PWD:/build rwlocker
 Тесты выполнены с применением фреймворка [doctest](https://github.com/doctest/doctest).
 Для включения тестов в сборку необходимо включить в cmake опцию `CMAKE_TESTING_ENABLED`.
 Будет собран исполняемый файл `test_rwlocker.cpp`.
+
+Тесты на i5-8600 проходят примерно 24 секунды.
