@@ -11,7 +11,7 @@ if (${CMAKE_TESTING_ENABLED})
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup()
 
-    add_executable(test_rwlocker test_rwlocker.cpp)
+    add_executable(test_rwlocker src/test_rwlocker.cpp)
     target_link_libraries(test_rwlocker librwlocker pthread)
     add_test(NAME test_rwlocker COMMAND test_rwlocker --force-colors=true)
 endif()
